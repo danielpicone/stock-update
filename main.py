@@ -20,15 +20,16 @@ def update_stock_history():
     today_date = datetime.datetime.today().strftime('%Y-%m-%d')
     stock_names = sheet.col_values(3)[1:]
     stock_prices = sheet.col_values(4)[1:]
-    stock_dict = dict(zip(stock_names, stock_prices))
-    stock_tuple = tuple(zip(stock_names, stock_prices))
+    stock_units = sheet.col_values(13)[1:]
+    # stock_dict = dict(zip(stock_names, stock_prices))
+    stock_tuple = tuple(zip(stock_names, stock_prices, stock_units))
 
     history_sheet = client.open("DJP stocks").worksheet("Price history")
 
     current_row = len(history_sheet.col_values(1))
     i = -1
 
-    new_cells = history_sheet.range(current_row+1,1,current_row+len(stock_dict),3)
+    new_cells = history_sheet.range(current_row+1,1,current_row+len(stock_dict),4)
     for cell in new_cells:
         if cell.col == 1:
             cell.value = today_date

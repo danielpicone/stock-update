@@ -7,9 +7,10 @@ sched = BlockingScheduler()
 @sched.scheduled_job('interval', minutes = 1)
 def scheduled_job():
     main.update_stock_history()
+    print("Stock history has been updated for ", datetime.datetime.today().strftime('%Y-%m-%d'))
 
-@sched.scheduled_job('interval', minutes = 1)
-def time_job():
-    print("Heyyyyyyyyyy")
+# @sched.scheduled_job('interval', minutes = 1)
+# def time_job():
+#     print("Heyyyyyyyyyy")
 
 sched.start()
