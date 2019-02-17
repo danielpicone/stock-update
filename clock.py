@@ -6,7 +6,7 @@ sched = BlockingScheduler()
 # @sched.scheduled_job('cron', day_of_week='mon-fri', hour = 11)
 @sched.scheduled_job('interval', minutes = 1)
 def scheduled_job():
-    main.update_history()
+    main.update_stock_history()
 
 @sched.scheduled_job('interval', minutes = 1)
 def time_job():
