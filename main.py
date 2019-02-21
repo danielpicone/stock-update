@@ -6,9 +6,10 @@ import sendgrid
 import os
 from sendgrid.helpers.mail import *
 
+today_date = datetime.datetime.today().strftime('%Y-%m-%d')
 
 # use creds to create a client to interact with the Google Drive API
-def update_stock_history():
+def open_spreadsheet(sheet_name):
     scope = ['https://spreadsheets.google.com/feeds',
              'https://www.googleapis.com/auth/drive']
     creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
@@ -16,18 +17,20 @@ def update_stock_history():
 
     # Find a workbook by name and open the first sheet
     # Make sure you use the right name here.
-    sheet = client.open("DJP stocks").worksheet("Stock Summary")
+    sheet = client.open("DJP stocks").worksheet(sheet_name)
+    return sheet
 
+# def update_stock_history(sheet, history_sheet):
+def update_stock_history():
     # Extract and print all of the values
-
+    sheet = open_spreadsheet("Stock Summary")
+    history_sheet = open_spreadsheet("Price history")
     today_date = datetime.datetime.today().strftime('%Y-%m-%d')
     stock_names = sheet.col_values(3)[1:]
     stock_prices = sheet.col_values(4)[1:]
     stock_units = sheet.col_values(13)[1:]
     stock_dict = dict(zip(stock_names, stock_prices))
     stock_tuple = tuple(zip(stock_names, stock_prices, stock_units))
-
-    history_sheet = client.open("DJP stocks").worksheet("Price history")
 
     current_row = len(history_sheet.col_values(1))
     i = -1
@@ -53,3 +56,20 @@ def send_email():
     print(response.status_code)
     print(response.body)
     print(response.headers)
+
+def get_price_history_df(end_date=today_date, start_date="2000-01-01"):
+    import gspread_pandas
+    worksheet = gspread_pandas.Spread("stocks", "DJP stocks")
+    worksheet.open_sheet("Price history")
+    history_sheet = worksheet.sheet_to_df(index=0)
+    history_sheet["price"] = history_sheet["price"].apply(float)
+    history_sheet["units"] = history_sheet["units"].apply(float)
+    history_sheet["name"] = history_sheet["stock"].str.split(":").str[1]
+    history_sheet["value"] = history_sheet.apply(lambda row: row["price"]*row["units"], axis=1)
+    return history_sheet[(history_sheet["date"] >= start_date) & (history_sheet["date"] <= end_date)]
+
+def get_min_date(sheet):
+    min_date = sheet.groupby("name", as_index = False).agg({"date": "min"})
+    min_date = pd.merge(min_date, sheet, left_on=["name","date"], right_on=["name","date"])\
+    [["name","price","units","value"]]
+    return min_date
