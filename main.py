@@ -117,5 +117,3 @@ def graph_indiv_stock():
             plt.close()
 
     import pdb; pdb.set_trace()
-
-send_email()
