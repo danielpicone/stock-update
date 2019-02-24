@@ -5,6 +5,8 @@ import pandas as pd
 import sendgrid
 import os
 from sendgrid.helpers.mail import *
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 today_date = datetime.datetime.today().strftime('%Y-%m-%d')
 
@@ -68,8 +70,50 @@ def get_price_history_df(end_date=today_date, start_date="2000-01-01"):
     history_sheet["value"] = history_sheet.apply(lambda row: row["price"]*row["units"], axis=1)
     return history_sheet[(history_sheet["date"] >= start_date) & (history_sheet["date"] <= end_date)]
 
-def get_min_date(sheet):
-    min_date = sheet.groupby("name", as_index = False).agg({"date": "min"})
-    min_date = pd.merge(min_date, sheet, left_on=["name","date"], right_on=["name","date"])\
+def get_min_date(df):
+    min_date = df.groupby("name", as_index = False).agg({"date": "min"})
+    min_date = pd.merge(min_date, df, left_on=["name","date"], right_on=["name","date"])\
     [["name","price","units","value"]]
     return min_date
+
+def graph_indiv_stock():
+    # import matplotlib.pyplot as plt
+    # import matplotlib.gridspec as gridspec
+    from matplotlib.backends.backend_pdf import PdfPages
+    plt.locator_params(nbins=6)
+
+    df = get_price_history_df()
+    min_df = get_min_date(df)
+    portfolio_df = df.merge(min_df[["name","value", "price"]]\
+    .rename(columns={"value": "start_value", "price":"start_price"}),
+        how = "left", on = "name")
+    portfolio_df["stock_return"] = portfolio_df.apply(lambda row: row["price"]/row["start_price"], axis=1)
+    portfolio_df = portfolio_df.merge(portfolio_df.groupby("date", as_index=False)\
+        .agg({"value":"sum"}).rename(columns={"value":"portfolio_value"}),
+        how = "left", on = "date")
+    portfolio_df["proportion"] = portfolio_df.apply(lambda row: row["value"]/row["portfolio_value"], axis=1)
+    portfolio_df["return_proportion"] = portfolio_df.apply(lambda row: row["stock_return"]*row["proportion"], axis=1)
+    names = portfolio_df["name"].unique()
+
+    with PdfPages("portfolio_charts.pdf") as pdf:
+        entire_df = portfolio_df.groupby("date", as_index = False).agg({"return_proportion":"sum"})
+        plt.figure(tight_layout = True)
+        plt.plot(entire_df["date"].tolist(), entire_df["return_proportion"].tolist())
+        plt.title("Return of total portfolio")
+        pdf.savefig()
+        plt.close()
+        for (i, s) in enumerate(names):
+            plt.figure(tight_layout = True)
+            gs = gridspec.GridSpec(len(names), 1)
+            stock_df = portfolio_df[portfolio_df["name"]==s]
+            x_axis = stock_df["date"].tolist()
+            plt.plot(x_axis, stock_df["stock_return"].tolist(),
+            x_axis, len(x_axis)*[1])
+            axes = plt.gca()
+            axes.set_ylim(0.95*portfolio_df["stock_return"].min(),
+                1.05*portfolio_df["stock_return"].max())
+            plt.title("Return of " + s)
+            pdf.savefig()
+            plt.close()
+
+    import pdb; pdb.set_trace()
