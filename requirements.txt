@@ -34,3 +34,4 @@ oauth2client==4.1.3
 oauthlib==3.0.1
 pandas
 sendgrid
+matplotlib
