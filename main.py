@@ -79,7 +79,21 @@ def send_email(attachment_path=None):
 
 def get_price_history_df(end_date=today_date, start_date="2000-01-01"):
     import gspread_pandas
-    worksheet = gspread_pandas.Spread("stocks", "DJP stocks")
+    # worksheet = gspread_pandas.Spread("stocks", "DJP stocks")
+    worksheet = gspread_pandas.Spread("stocks", "DJP stocks", config =
+{
+  "type": "service_account",
+  "project_id": "djp-portfolio",
+  "private_key_id": "669cd846c30e067d26d504007addfa5ad4c5bd03",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC0b8B7k/219REe\n+sjL/4+clUSq4USowLCV9o+rh3sydL9WfbJaEqMPaRG0BnJOPwU8trkALZOcfndB\nWnDBF+2vBZuZMu0bF6q6EKeyviTfe+iycHCrlLev4UenqTAVfXyoh5CnersGAk8O\nY8q9fZo2sWo8htmL1h2gNAFC2GiXsnE56/B6TighAbc5qWY6pe5r7KZZEtEepCxA\nW2dKeq2hmgwlTPwUI2nQgwTdyJ2W+FHuF0iqmrEAwPq/5dKbWs/ZdYTrRJoAZ20h\nTw4ABk7qKZe2MVO9FFF1kLyfXIIA17ifwcnWiZLmaQ6xP+Ru/Z4Ab20gcHRqpvGR\nJDhcRRO5AgMBAAECggEAA8JuUsTXHPLxu+ECzQlSnzMW/q555UA6ja1Y+fx1Kyx2\njiFJVYoc3qXUShl2ST4T6FtwSFoqwLB74J83STar66EkyFDg0tcv5feR3u4KS6PD\nyfAA0Ppkx2Pcv9gNGe2G6uYENBEhE3N53TVkFIWo8GnK6l7u6nR4Io3i1tc2eq6i\np2M/uTr8/Kr6fAlxv46YDeScxrSLiMd9CGpmJR3WJwpLKdLEJIpejQhd2Y1uhogO\nIthgRtjOFxeJsIDFGkhhUpxRj7eaqRp9FFPfFivkO46ICsRQKesfanMydKcIOBzs\n2f4DdnybtX4FgH+esND6sjSaeB6uHPg+ZLZ1bYLRfwKBgQDkOaQjjT+BMKnC3YP5\ne9384MB1CxEzc6WHwLoF/TPYeOZZW2p4RXW6fDKE1m+AxIgzBZbRSkQd/SVVxnSu\nU7T0424w/5/l87grCm3HPqe1dbEtYHAk84bo5Q8Gft90mjeHreX89+wFgvmpX5sl\nDInoU6X2jCegvhTG1Zkg1BSXVwKBgQDKZUFPyfWVSWbUlGcVAXVux+JLffCyssVP\nTuYsPjAw87/wolchywU4NL1yQ6m2j2ZXK4XJWxLQJqRnMWlXc4VO6tjlHWMz9rjJ\nA3w+B5V0WBygdb8iLtR+TFZsAgaXQ1pc1HMyS269dRvINZfGtUj2aeUtU9ur5p84\n5TDjm0QTbwKBgQDUJoTfC3kh5ZOY8gOxUaSsYlxlMLF/q5wPEmeaE6IzM0elfuX9\nAUyL2tG3TAKAp7CYBTUKPkgNvHkNQBrMxkErd5LB942y25iyYdJkaWjKtKnLrZ7x\nqnMZYXxTJHMh2A2QkWV+fxQml3bvLFFy4jH8Bm37PpPDx45Wus3Kh3rQpwKBgQCe\nqNeVI73HxJ2+wYM5XUZgjILiKRz6CNhR/ojDYBDJHxt1GN3zGMLDt9xW6aHuAeX5\nKZ4cJa/OyqwQVRS+QEndfo5+tRXiU2Ox+HB589n+NWBjjUpDErDzPQZ2bvQZuevp\nX4XahHWQQXCA9zo+xDgpKwREDzviOszQfiJgGoQ4MwKBgQC2yQRz8oLGvb+dNiTO\nxKd+3BmmeYn2wCVCCRyzqfSZrNbYBzfhG7iSNq3bOjQTL3hTF1QbFJNu8YjIEvYH\nWGZcPRRqw9U+BNCv818evgwXE6mN/8y7jPfCpPKTzh/a84yYtuAVVx6llFKj6cHx\nbWPLc/Xb2eKL7kInZsXZz7o81Q==\n-----END PRIVATE KEY-----\n",
+  "client_email": "portfolio@djp-portfolio.iam.gserviceaccount.com",
+  "client_id": "107324578022794643121",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/portfolio%40djp-portfolio.iam.gserviceaccount.com"
+}
+    )
     worksheet.open_sheet("Price history")
     history_sheet = worksheet.sheet_to_df(index=0)
     history_sheet["date"] = pd.to_datetime(history_sheet["date"], format = "%Y-%m-%d")
