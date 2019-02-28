@@ -53,8 +53,8 @@ def send_email(attachment_path=None):
     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
     from_email = Email("danielpicone2@gmail.com")
     to_email = Email("danielpicone2@gmail.com")
-    subject = "Sending with SendGrid is Fun"
-    content = Content("text/plain", "and easy to do anywhere, even with Python")
+    subject = "Stock report for " + today_date
+    content = Content("text/plain", "This is just an update for your stock portfolio")
     mail = Mail(from_email, subject, to_email, content)
 
     if attachment_path:
@@ -80,6 +80,7 @@ def send_email(attachment_path=None):
 def get_price_history_df(end_date=today_date, start_date="2000-01-01"):
     import gspread_pandas
     # worksheet = gspread_pandas.Spread("stocks", "DJP stocks")
+    #TODO: Create a better way to save this config
     worksheet = gspread_pandas.Spread("stocks", "DJP stocks", config =
 {
   "type": "service_account",
