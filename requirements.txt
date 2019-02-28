@@ -35,3 +35,4 @@ oauthlib==3.0.1
 pandas
 sendgrid
 matplotlib
+gspread_pandas
