@@ -7,6 +7,9 @@ import os
 from sendgrid.helpers.mail import *
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import numpy as np
+import matplotlib.dates as mdates
+import matplotlib.ticker as ticker
 
 today_date = datetime.datetime.today().strftime('%Y-%m-%d')
 
@@ -46,14 +49,29 @@ def update_stock_history():
             cell.value = stock_tuple[i][cell.col-2]
     history_sheet.update_cells(new_cells)
 
-def send_email():
+def send_email(attachment_path=None):
     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
     from_email = Email("danielpicone2@gmail.com")
     to_email = Email("danielpicone2@gmail.com")
     subject = "Sending with SendGrid is Fun"
     content = Content("text/plain", "and easy to do anywhere, even with Python")
     mail = Mail(from_email, subject, to_email, content)
-    # import pdb; pdb.set_trace()
+
+    if attachment_path:
+        import base64
+        attachment = Attachment()
+        with open(attachment_path, "rb") as f:
+            data = f.read()
+
+        encoded = base64.b64encode(data).decode()
+        attachment.content=encoded
+        attachment.type="application/pdf"
+        attachment.filename="Stock report for " + today_date + ".pdf"
+        attachment.disposition="attachment"
+        attachment.content_id="PDF Document file"
+        mail.add_attachment(attachment)
+
+
     response = sg.client.mail.send.post(request_body=mail.get())
     print(response.status_code)
     print(response.body)
@@ -64,6 +82,7 @@ def get_price_history_df(end_date=today_date, start_date="2000-01-01"):
     worksheet = gspread_pandas.Spread("stocks", "DJP stocks")
     worksheet.open_sheet("Price history")
     history_sheet = worksheet.sheet_to_df(index=0)
+    history_sheet["date"] = pd.to_datetime(history_sheet["date"], format = "%Y-%m-%d")
     history_sheet["price"] = history_sheet["price"].apply(float)
     history_sheet["units"] = history_sheet["units"].apply(float)
     history_sheet["name"] = history_sheet["stock"].str.split(":").str[1]
@@ -76,13 +95,17 @@ def get_min_date(df):
     [["name","price","units","value"]]
     return min_date
 
-def graph_indiv_stock():
+def graph_indiv_stock(file_name = "portfolio_charts.pdf"):
     # import matplotlib.pyplot as plt
     # import matplotlib.gridspec as gridspec
     from matplotlib.backends.backend_pdf import PdfPages
-    plt.locator_params(nbins=6)
+    import matplotlib.dates as mdates
 
-    df = get_price_history_df()
+    def format_date(x, pos = None):
+        thisind = np.clip(int(x + 0.5), 0, N -1)
+        return entire_df["date"][thisind].strftime("%Y-%m-%d")
+
+    df = get_price_history_df(start_date = "2019-01-01")
     min_df = get_min_date(df)
     portfolio_df = df.merge(min_df[["name","value", "price"]]\
     .rename(columns={"value": "start_value", "price":"start_price"}),
@@ -95,10 +118,13 @@ def graph_indiv_stock():
     portfolio_df["return_proportion"] = portfolio_df.apply(lambda row: row["stock_return"]*row["proportion"], axis=1)
     names = portfolio_df["name"].unique()
 
-    with PdfPages("portfolio_charts.pdf") as pdf:
+    with PdfPages(file_name) as pdf:
         entire_df = portfolio_df.groupby("date", as_index = False).agg({"return_proportion":"sum"})
         plt.figure(tight_layout = True)
-        plt.plot(entire_df["date"].tolist(), entire_df["return_proportion"].tolist())
+        N = len(entire_df.date)
+        plt.plot(range(len(entire_df.date)), entire_df["return_proportion"].tolist(), "o-")
+        plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(format_date))
+        plot_formatter(plt)
         plt.title("Return of total portfolio")
         pdf.savefig()
         plt.close()
@@ -106,14 +132,25 @@ def graph_indiv_stock():
             plt.figure(tight_layout = True)
             gs = gridspec.GridSpec(len(names), 1)
             stock_df = portfolio_df[portfolio_df["name"]==s]
-            x_axis = stock_df["date"].tolist()
-            plt.plot(x_axis, stock_df["stock_return"].tolist(),
-            x_axis, len(x_axis)*[1])
-            axes = plt.gca()
-            axes.set_ylim(0.95*portfolio_df["stock_return"].min(),
+            N = len(stock_df.date)
+            x_axis = range(len(stock_df["date"]))
+            plt.plot(x_axis, stock_df["stock_return"].tolist(), "o-")
+            plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(format_date))
+            plt.gca().set_ylim(0.95*portfolio_df["stock_return"].min(),
                 1.05*portfolio_df["stock_return"].max())
+            plot_formatter(plt)
             plt.title("Return of " + s)
             pdf.savefig()
             plt.close()
 
-    import pdb; pdb.set_trace()
+
+def plot_formatter(plot):
+    years = mdates.YearLocator()
+    months = mdates.MonthLocator()
+    days = mdates.DayLocator()
+    plt.grid(True)
+
+def generate_email(file_name = "portfolio_charts.pdf"):
+    graph_indiv_stock(file_name)
+    send_email(file_name)
+    return True
