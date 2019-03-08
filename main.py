@@ -49,33 +49,33 @@ def update_stock_history():
             cell.value = stock_tuple[i][cell.col-2]
     history_sheet.update_cells(new_cells)
 
-def send_email(attachment_path=None):
-    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
-    from_email = Email("danielpicone2@gmail.com")
-    to_email = Email("danielpicone2@gmail.com")
-    subject = "Stock report for " + today_date
-    content = Content("text/plain", "This is just an update for your stock portfolio")
-    mail = Mail(from_email, subject, to_email, content)
-
-    if attachment_path:
-        import base64
-        attachment = Attachment()
-        with open(attachment_path, "rb") as f:
-            data = f.read()
-
-        encoded = base64.b64encode(data).decode()
-        attachment.content=encoded
-        attachment.type="application/pdf"
-        attachment.filename="Stock report for " + today_date + ".pdf"
-        attachment.disposition="attachment"
-        attachment.content_id="PDF Document file"
-        mail.add_attachment(attachment)
-
-
-    response = sg.client.mail.send.post(request_body=mail.get())
-    print(response.status_code)
-    print(response.body)
-    print(response.headers)
+# def send_email(attachment_path=None):
+#     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
+#     from_email = Email("danielpicone2@gmail.com")
+#     to_email = Email("danielpicone2@gmail.com")
+#     subject = "Stock report for " + today_date
+#     content = Content("text/plain", "This is just an update for your stock portfolio")
+#     mail = Mail(from_email, subject, to_email, content)
+#
+#     if attachment_path:
+#         import base64
+#         attachment = Attachment()
+#         with open(attachment_path, "rb") as f:
+#             data = f.read()
+#
+#         encoded = base64.b64encode(data).decode()
+#         attachment.content=encoded
+#         attachment.type="application/pdf"
+#         attachment.filename="Stock report for " + today_date + ".pdf"
+#         attachment.disposition="attachment"
+#         attachment.content_id="PDF Document file"
+#         mail.add_attachment(attachment)
+#
+#
+#     response = sg.client.mail.send.post(request_body=mail.get())
+#     print(response.status_code)
+#     print(response.body)
+#     print(response.headers)
 
 def get_price_history_df(end_date=today_date, start_date="2000-01-01"):
     import gspread_pandas
@@ -137,7 +137,7 @@ def graph_indiv_stock(file_name = "portfolio_charts.pdf"):
         entire_df = portfolio_df.groupby("date", as_index = False).agg({"return_proportion":"sum"})
         plt.figure(tight_layout = True)
         N = len(entire_df.date)
-        plt.plot(range(len(entire_df.date)), entire_df["return_proportion"].tolist(), "o-")
+        plt.plot(range(len(entire_df.date)), entire_df["return_proportion"].tolist(), "-")
         plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(format_date))
         plot_formatter(plt)
         plt.title("Return of total portfolio")
@@ -149,7 +149,7 @@ def graph_indiv_stock(file_name = "portfolio_charts.pdf"):
             stock_df = portfolio_df[portfolio_df["name"]==s]
             N = len(stock_df.date)
             x_axis = range(len(stock_df["date"]))
-            plt.plot(x_axis, stock_df["stock_return"].tolist(), "o-")
+            plt.plot(x_axis, stock_df["stock_return"].tolist(), "-")
             plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(format_date))
             plt.gca().set_ylim(0.95*portfolio_df["stock_return"].min(),
                 1.05*portfolio_df["stock_return"].max())
@@ -165,7 +165,7 @@ def plot_formatter(plot):
     days = mdates.DayLocator()
     plt.grid(True)
 
-def generate_email(file_name = "portfolio_charts.pdf"):
-    graph_indiv_stock(file_name)
-    send_email(file_name)
-    return True
+# def generate_email(file_name = "portfolio_charts.pdf"):
+#     graph_indiv_stock(file_name)
+#     send_email(file_name)
+#     return True
