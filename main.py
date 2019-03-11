@@ -10,6 +10,8 @@ import matplotlib.gridspec as gridspec
 import numpy as np
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
+import snailmail
+# from . import email
 
 today_date = datetime.datetime.today().strftime('%Y-%m-%d')
 
