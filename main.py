@@ -10,8 +10,8 @@ import matplotlib.gridspec as gridspec
 import numpy as np
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
-import snailmail
-# from . import email
+import graphing
+import snailmail as sm
 
 today_date = datetime.datetime.today().strftime('%Y-%m-%d')
 
@@ -171,3 +171,5 @@ def plot_formatter(plot):
 #     graph_indiv_stock(file_name)
 #     send_email(file_name)
 #     return True
+
+# snailmail.generate_email()

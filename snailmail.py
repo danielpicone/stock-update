@@ -1,5 +1,5 @@
 # Email set up and sending
-
+import graphing
 
 def send_email(attachment_path=None):
     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
@@ -39,6 +39,6 @@ def create_attachment(attachment_path = None):
 
 
 def generate_email(file_name = "portfolio_charts.pdf"):
-    main.graph_indiv_stock(file_name)
+    graphing.graph_indiv_stock(file_name)
     send_email(file_name)
     return True

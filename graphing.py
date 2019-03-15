@@ -1,8 +1,7 @@
 # Creating the portfolio charts
+import main
 
 def graph_indiv_stock(file_name = "portfolio_charts.pdf"):
-    # import matplotlib.pyplot as plt
-    # import matplotlib.gridspec as gridspec
     from matplotlib.backends.backend_pdf import PdfPages
     import matplotlib.dates as mdates
 
@@ -10,7 +9,7 @@ def graph_indiv_stock(file_name = "portfolio_charts.pdf"):
         thisind = np.clip(int(x + 0.5), 0, N -1)
         return entire_df["date"][thisind].strftime("%Y-%m-%d")
 
-    df = get_price_history_df(start_date = "2019-01-01")
+    df = main.get_price_history_df(start_date = "2019-01-01")
     min_df = get_min_date(df)
     portfolio_df = df.merge(min_df[["name","value", "price"]]\
     .rename(columns={"value": "start_value", "price":"start_price"}),
