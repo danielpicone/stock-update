@@ -14,7 +14,7 @@ def update_schedule():
 # @sched.scheduled_job('cron', day_of_week='fri', hour = 9, minute = 2)
 @sched.scheduled_job('interval', minutes = 1)
 def email_schedule():
-    # time.sleep(60)
+    time.sleep(60)
     sm.generate_email("Stock report.pdf")
     print("Email was sent at ", datetime.datetime.today().strftime('%Y-%m-%d %H:%M'))
 

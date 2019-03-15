@@ -83,12 +83,25 @@ def get_price_history_df(end_date=today_date, start_date="2000-01-01"):
     import gspread_pandas
     # worksheet = gspread_pandas.Spread("stocks", "DJP stocks")
     #TODO: Create a better way to save this config
+    worksheet_config = {
+          "type": "service_account",
+          "project_id": "djp-portfolio",
+          "private_key_id": "669cd846c30e067d26d504007addfa5ad4c5bd03",
+          "private_key": os.environ.get("GS_API_KEY"),
+          "client_email": "portfolio@djp-portfolio.iam.gserviceaccount.com",
+          "client_id": "107324578022794643121",
+          "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+          "token_uri": "https://oauth2.googleapis.com/token",
+          "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+          "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/portfolio%40djp-portfolio.iam.gserviceaccount.com"
+        }
+    import pdb; pdb.set_trace()
     worksheet = gspread_pandas.Spread("stocks", "DJP stocks", config =
         {
           "type": "service_account",
           "project_id": "djp-portfolio",
           "private_key_id": "669cd846c30e067d26d504007addfa5ad4c5bd03",
-          "private_key": os.environ.get("GSPREAD_PRIVATE_KEY"),
+          "private_key": os.environ.get("GS_API_KEY"),
           "client_email": "portfolio@djp-portfolio.iam.gserviceaccount.com",
           "client_id": "107324578022794643121",
           "auth_uri": "https://accounts.google.com/o/oauth2/auth",
